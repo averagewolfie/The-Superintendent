@@ -32,7 +32,7 @@ async def on_message_edit(before, after):
 		return
 	if before.content == after.content:
 		return
-	e = discord.Embed(title="⚠ A message has been edited on the server ⚠", description="**Author:** " + str(before.author) + "\n**Before:** " + before.content + "\n**After:** " + after.content, timestamp=datetime.datetime.utcnow())
+	e = discord.Embed(title="⚠ A message has been edited on the server ⚠", description="**Author:** " + str(before.author) + "\n**Channel:** " + before.channel.mention + "\n**Before:** " + before.content + "\n**After:** " + after.content, timestamp=datetime.datetime.utcnow())
 	e.set_thumbnail(url=before.author.avatar_url)
 	return await before.guild.get_channel(546595428326440982).send(embed=e) # Preferably a user-log channel for members
 
@@ -40,7 +40,7 @@ async def on_message_edit(before, after):
 async def on_message_delete(message):
 	if message.author == client.user:
 		return
-	e = discord.Embed(title="🚫 A message has been removed from the server 🚫", description="**Author:** " + str(message.author) + "\n**Content:** " + message.content, timestamp=datetime.datetime.utcnow())
+	e = discord.Embed(title="🚫 A message has been removed from the server 🚫", description="**Author:** " + str(message.author) + "\n**Channel:** " + message.channel.mention + "\n**Content:** " + message.content, timestamp=datetime.datetime.utcnow())
 	e.set_thumbnail(url=message.author.avatar_url)
 	return await message.guild.get_channel(546595428326440982).send(embed=e) # Preferably a user-log channel for members
 
