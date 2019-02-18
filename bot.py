@@ -17,6 +17,19 @@ def fs(data = None):
 		json.dump(data, open('data.json', 'w'), indent=4)
 
 @client.event
+async def on_message(message):
+	if message.content.lower().startswith("prune "):
+		amt = message.content.lower()[6:]
+		try:
+			hst = await message.channel.history(limit=int(amt) + 1).flatten()
+		except:
+			return await message.channel.send("You need to specify an *integer* value of messages to prune.")
+		test = await message.channel.send("Pruning messages...")
+		for i in hst:
+			await i.delete()
+		return await test.edit(content=amt + " messages deleted! One additional removal has also occurred, for the message which you sent to invoke the command.")
+
+@client.event
 async def on_member_join(member):
 	if member == client.user:
 		return
