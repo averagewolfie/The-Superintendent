@@ -10,6 +10,12 @@ client = discord.Client()
 async def on_ready():
 	print('We have logged in as {0.user}'.format(client))
 
+async def fs(data = None):
+	if data is None:
+		return json.load(open("data.json")) # might have to make your own data.json
+	else:
+		json.dump(data, open('data.json', 'w'), indent=4)
+
 @client.event
 async def on_member_join(member):
 	if member == client.user:
@@ -43,5 +49,36 @@ async def on_message_delete(message):
 	e = discord.Embed(title="🚫 A message has been removed from the server 🚫", description="**Author:** " + str(message.author) + "\n**Channel:** " + message.channel.mention + "\n**Content:** " + message.content, timestamp=datetime.datetime.utcnow())
 	e.set_thumbnail(url=message.author.avatar_url)
 	return await message.guild.get_channel(546595428326440982).send(embed=e) # Preferably a user-log channel for members
+
+@client.event
+async def on_raw_reaction_add(payload):
+	if str(payload.emoji) == "⭐":
+		m = await client.get_channel(payload.channel_id).get_message(payload.message_id)
+		amt = len(await discord.utils.get(m.reactions, emoji=str(payload.emoji)).users().flatten())
+		print(amt)
+		if amt > 0:
+			data = await fs()
+			a = m.attachments
+			if str(m.id) in data["messages"]:
+				h = await m.guild.get_channel(546988876007473162).get_message(data["messages"][str(m.id)]) # Preferably a Starboard rehash channel
+				await h.edit(content="⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " stars and counting... ⭐\n\n" + m.content)
+			else:
+				msg = await m.guild.get_channel(546988876007473162).send("⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " star" + ("s" if amt > 1 else "") + " and counting... ⭐\n\n" + m.content, files=a) # Preferably a Starboard rehash channel
+				data["messages"][str(m.id)] = msg.id
+				await fs(data)
+
+@client.event
+async def on_raw_reaction_remove(payload):
+	if str(payload.emoji) == "⭐":
+		m = await client.get_channel(payload.channel_id).get_message(payload.message_id)
+		data = await fs()
+		h = await m.guild.get_channel(546988876007473162).get_message(data["messages"][str(m.id)]) # Preferably a Starboard rehash channel
+		try:
+			amt = len(await discord.utils.get(m.reactions, emoji=str(payload.emoji)).users().flatten())
+			await h.edit(content="⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " star" + ("s" if amt > 1 else "") + " and counting... ⭐\n\n" + m.content)
+		except: # because if there are no more stars, then it won't be able to find the message using that method, so juct chuck it.
+			await h.delete()
+			del data["messages"][str(m.id)]
+			await fs(data)
 
 client.run("""No... why would I show you all the bot token? Use your own. :<""")
