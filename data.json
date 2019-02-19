@@ -1,0 +1,6 @@
+{
+    "bot_token": "No... why would I show you all the bot token? Use your own. :<",
+    "messages": { // template for Starboard rehash
+        "the_original_message_id": "the_reposted_message_id" // which, by the way, is an integer, not a string
+    }
+}
