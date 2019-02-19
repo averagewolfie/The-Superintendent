@@ -94,4 +94,4 @@ async def on_raw_reaction_remove(payload):
 			del data["messages"][str(m.id)]
 			fs(data)
 
-client.run("""No... why would I show you all the bot token? Use your own. :<""")
+client.run(fs()["bot_token"])
