@@ -20,6 +20,15 @@ def fs(data = None):
 	except Exception as e:
 		print("An error has occurred while attempting to retrieve the data file.\n" + type(e).__name__ + ": " + str(e))
 
+async def msg(context, user, guild, sys = False):
+	e = discord.Embed(title=context[0], description=context[1], timestamp=datetime.datetime.utcnow())
+	e.set_thumbnail(url=user.avatar_url)
+	if sys:
+		channel = discord.utils.get(guild.text_channels, name="system-log")
+	else:
+		channel = discord.utils.get(guild.text_channels, name="log")
+	return await channel.send(embed=e)
+
 class Superintendent(commands.Bot):
 	def __init__(self):
 		super().__init__(command_prefix="))", case_insensitive=True)
@@ -36,32 +45,34 @@ class Superintendent(commands.Bot):
 	async def on_member_join(self, member):
 		if member == self.user:
 			return
-		e = discord.Embed(title="🌟 A new user has joined the server 🌟", description="*Please give a warm welcome to **" + member.name + "**!*", timestamp=datetime.datetime.utcnow())
-		e.set_thumbnail(url=member.avatar_url)
-		return await discord.utils.get(member.guild.text_channels, name="log").send(embed=e)
+		return await msg(["🌟 A new user has joined the server 🌟", "*Please give a warm welcome to **" + member.name + "**!*"], member, member.guild)
 
 	async def on_member_remove(self, member):
 		if member == self.user:
 			return
-		e = discord.Embed(title="👋 A user has left the server 👋", description="*We're sorry to see you go, **" + member.name + "**. Please come back again soon.~*", timestamp=datetime.datetime.utcnow())
-		e.set_thumbnail(url=member.avatar_url)
-		return await discord.utils.get(member.guild.text_channels, name="log").send(embed=e)
+		return await msg(["👋 A user has left the server 👋", "*We're sorry to see you go, **" + member.name + "**. Please come back again soon.~*"], member, member.guild)
+
+	async def on_member_ban(self, guild, user):
+		if user == self.user:
+			return
+		return await msg(["🔨 A user has been banned from the server 🔨", "*We're sorry to see you go, **" + user.name + "**. We wish things had been better than this...*"], user, guild)
+
+	async def on_member_unban(self, guild, user):
+		if user == self.user:
+			return
+		return await msg(["✅ A user has been unbanned from the server ✅", "*It's your lucky day, **" + user.name + "**! We hope to see you come back!*"], user, guild)
 
 	async def on_message_edit(self, before, after):
 		if before.author == self.user:
 			return
 		if before.content == after.content:
 			return
-		e = discord.Embed(title="⚠ A message has been edited on the server ⚠", description="**Author:** " + str(before.author) + "\n**Channel:** " + before.channel.mention + "\n**Before:** " + before.content + "\n**After:** " + after.content, timestamp=datetime.datetime.utcnow())
-		e.set_thumbnail(url=before.author.avatar_url)
-		return await discord.utils.get(before.guild.text_channels, name="system-log").send(embed=e)
+		return await msg(["⚠ A message has been edited on the server ⚠", "**Author:** " + str(before.author) + "\n**Channel:** " + before.channel.mention + "\n**Before:** " + before.content + "\n**After:** " + after.content], before.author, before.guild, True)
 
 	async def on_message_delete(self, message):
 		if message.author == self.user:
 			return
-		e = discord.Embed(title="🚫 A message has been removed from the server 🚫", description="**Author:** " + str(message.author) + "\n**Channel:** " + message.channel.mention + "\n**Content:** " + message.content, timestamp=datetime.datetime.utcnow())
-		e.set_thumbnail(url=message.author.avatar_url)
-		return await discord.utils.get(message.guild.text_channels, name="system-log").send(embed=e)
+		return await msg(["🚫 A message has been removed from the server 🚫", "**Author:** " + str(message.author) + "\n**Channel:** " + message.channel.mention + "\n**Content:** " + message.content], message.author, message.guild, True)
 
 	async def on_raw_reaction_add(self, payload):
 		if str(payload.emoji) == "⭐":
