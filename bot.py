@@ -68,7 +68,6 @@ class Superintendent(commands.Bot):
 			m = await self.get_channel(payload.channel_id).get_message(payload.message_id)
 			amt = len(await discord.utils.get(m.reactions, emoji=str(payload.emoji)).users().flatten())
 			if amt > 2:
-				print(m.author.name, amt)
 				data = fs()
 				if str(m.id) in data["messages"]:
 					h = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").get_message(data["messages"][str(m.id)])
@@ -77,16 +76,15 @@ class Superintendent(commands.Bot):
 					import io
 					import aiohttp
 
-					a = m.attachments
-					a2 = []
+					a = []
 					for atch in m.attachments:
 						async with aiohttp.ClientSession() as session:
 							async with session.get(atch.url) as resp:
 								if resp.status != 200:
 									print("A file was not found while inducting a message to the Hall of Fame in " + m.guild.name + ".")
-								a2.append(discord.File(io.BytesIO(await resp.read()), atch.filename))
+								a.append(discord.File(io.BytesIO(await resp.read()), atch.filename))
 								await session.close()
-					msg = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").send("⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " star" + ("s" if amt > 1 else "") + " and counting... ⭐\n\n" + m.content, files=a2)
+					msg = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").send("⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " star" + ("s" if amt > 1 else "") + " and counting... ⭐\n\n" + m.content, files=a)
 					data["messages"][str(m.id)] = msg.id
 					fs(data)
 
