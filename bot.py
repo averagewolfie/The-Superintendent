@@ -67,14 +67,26 @@ class Superintendent(commands.Bot):
 		if str(payload.emoji) == "⭐":
 			m = await self.get_channel(payload.channel_id).get_message(payload.message_id)
 			amt = len(await discord.utils.get(m.reactions, emoji=str(payload.emoji)).users().flatten())
-			if amt > 0:
+			if amt > 2:
+				print(m.author.name, amt)
 				data = fs()
 				if str(m.id) in data["messages"]:
 					h = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").get_message(data["messages"][str(m.id)])
 					await h.edit(content="⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " stars and counting... ⭐\n\n" + m.content)
 				else:
+					import io
+					import aiohttp
+
 					a = m.attachments
-					msg = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").send("⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " star" + ("s" if amt > 1 else "") + " and counting... ⭐\n\n" + m.content, files=a)
+					a2 = []
+					for atch in m.attachments:
+						async with aiohttp.ClientSession() as session:
+							async with session.get(atch.url) as resp:
+								if resp.status != 200:
+									print("A file was not found while inducting a message to the Hall of Fame in " + m.guild.name + ".")
+								a2.append(discord.File(io.BytesIO(await resp.read()), atch.filename))
+								await session.close()
+					msg = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").send("⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " star" + ("s" if amt > 1 else "") + " and counting... ⭐\n\n" + m.content, files=a2)
 					data["messages"][str(m.id)] = msg.id
 					fs(data)
 
@@ -106,7 +118,7 @@ class Superintendent(commands.Bot):
 		except Exception as e:
 			await self.get_user(397080996312514580).send("While handling an exception for \"" + str(event) + "\", another one has occurred which prevented the process from completing.\n" + type(e).__name__ + ": " + str(e))
 		finally:
-			return await self.get_user(397080996312514580).send("An exception has occurred during \"" + str(event) + "\".\n\n**Guild:** " + guild.name + "\n**Channel:** " + channel.name + "\n**User:** " + str(user) + "\n\n`" + traceback.format_exc() + "`")
+			return await self.get_user(397080996312514580).send("An exception has occurred during \"" + str(event) + "\".\n\n**Guild:** " + guild.name + "\n**Channel:** " + channel.mention + "\n**User:** " + str(user) + "\n\n`" + traceback.format_exc() + "`")
 
 if __name__ == "__main__":
 	Superintendent().run(fs()["bot_token"])
