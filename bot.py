@@ -21,8 +21,15 @@ def fs(data = None):
 		print("An error has occurred while attempting to retrieve the data file.\n" + type(e).__name__ + ": " + str(e))
 
 async def msg(context, user, guild, sys = False):
-	e = discord.Embed(title=context[0], description=context[1], timestamp=datetime.datetime.utcnow())
+	e = discord.Embed(title=context[0], timestamp=datetime.datetime.utcnow())
 	e.set_thumbnail(url=user.avatar_url)
+	if type(context[1]) is str:
+		e.description = context[1]
+	else:
+		for i in context:
+			if i == e.title:
+				continue
+			e.add_field(name=i[0], value=i[1])
 	if sys:
 		channel = discord.utils.get(guild.text_channels, name="system-log")
 	else:
@@ -67,12 +74,12 @@ class Superintendent(commands.Bot):
 			return
 		if before.content == after.content:
 			return
-		return await msg(["⚠ A message has been edited on the server ⚠", "**Author:** " + str(before.author) + "\n**Channel:** " + before.channel.mention + "\n**Before:** " + before.content + "\n**After:** " + after.content], before.author, before.guild, True)
+		return await msg(["⚠ A message has been edited on the server ⚠", ["Author", str(before.author)], ["Channel", before.channel.mention], ["Before", before.content], ["After", after.content]], before.author, before.guild, True)
 
 	async def on_message_delete(self, message):
 		if message.author == self.user:
 			return
-		return await msg(["🚫 A message has been removed from the server 🚫", "**Author:** " + str(message.author) + "\n**Channel:** " + message.channel.mention + "\n**Content:** " + message.content], message.author, message.guild, True)
+		return await msg(["🚫 A message has been removed from the server 🚫", ["Author", str(message.author)], ["Channel", message.channel.mention], ["Content", message.content]], message.author, message.guild, True)
 
 	async def on_raw_reaction_add(self, payload):
 		if str(payload.emoji) == "⭐":
