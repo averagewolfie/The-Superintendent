@@ -21,7 +21,7 @@ def fs(data = None):
 		print("An error has occurred while attempting to retrieve the data file.\n" + type(e).__name__ + ": " + str(e))
 
 async def msg(context, user, guild, sys = False):
-	e = discord.Embed(title=context[0], timestamp=datetime.datetime.utcnow())
+	e = discord.Embed(title=context[0], timestamp=datetime.datetime.utcnow(), colour=0x5f7d4e)
 	e.set_thumbnail(url=user.avatar_url)
 	if type(context[1]) is str:
 		e.description = context[1]
