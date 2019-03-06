@@ -4,6 +4,8 @@ import asyncio
 import random
 import datetime
 import traceback
+import io
+import aiohttp
 
 from discord.ext import commands
 
@@ -20,8 +22,8 @@ def fs(data = None):
 	except Exception as e:
 		print("An error has occurred while attempting to retrieve the data file.\n" + type(e).__name__ + ": " + str(e))
 
-async def msg(context, user, guild, sys = False):
-	e = discord.Embed(title=context[0], timestamp=datetime.datetime.utcnow())
+async def msg(context, user, guild, sys = False, atchs = None):
+	e = discord.Embed(title=context[0], timestamp=datetime.datetime.utcnow(), colour=0x5f7d4e)
 	e.set_thumbnail(url=user.avatar_url)
 	if type(context[1]) is str:
 		e.description = context[1]
@@ -34,7 +36,7 @@ async def msg(context, user, guild, sys = False):
 		channel = discord.utils.get(guild.text_channels, name="system-log")
 	else:
 		channel = discord.utils.get(guild.text_channels, name="log")
-	return await channel.send(embed=e)
+	return await channel.send(embed=e, files=atchs if len(atchs) > 0 else None)
 
 class Superintendent(commands.Bot):
 	def __init__(self):
@@ -79,7 +81,18 @@ class Superintendent(commands.Bot):
 	async def on_message_delete(self, message):
 		if message.author == self.user:
 			return
-		return await msg(["🚫 A message has been removed from the server 🚫", ["Author", str(message.author)], ["Channel", message.channel.mention], ["Content", message.content]], message.author, message.guild, True)
+		a = []
+		for atch in message.attachments:
+			async with aiohttp.ClientSession() as session:
+				async with session.get(atch.proxy_url) as resp:
+					if resp.status != 200:
+						print("A file was not found while inducting a message to the Hall of Fame in " + m.guild.name + ".")
+					a.append(discord.File(io.BytesIO(await resp.read()), atch.filename))
+					await session.close()
+		arr = ["🚫 A message has been removed from the server 🚫", ["Author", str(message.author)], ["Channel", message.channel.mention]]
+		if message.content != "":
+			arr.append(["Content", message.content])
+		return await msg(arr, message.author, message.guild, True, a)
 
 	async def on_raw_reaction_add(self, payload):
 		if str(payload.emoji) == "⭐":
@@ -91,9 +104,6 @@ class Superintendent(commands.Bot):
 					h = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").get_message(data["messages"][str(m.id)])
 					await h.edit(content="⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " stars and counting... ⭐\n\n" + m.content)
 				else:
-					import io
-					import aiohttp
-
 					a = []
 					for atch in m.attachments:
 						async with aiohttp.ClientSession() as session:
@@ -111,6 +121,8 @@ class Superintendent(commands.Bot):
 			m = await self.get_channel(payload.channel_id).get_message(payload.message_id)
 			data = fs()
 			h = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").get_message(data["messages"][str(m.id)])
+			if h is None:
+				return # stop throwing errors during tests if the HOF message doesn't even exist...
 			try:
 				amt = len(await discord.utils.get(m.reactions, emoji=str(payload.emoji)).users().flatten())
 				await h.edit(content="⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " star" + ("s" if amt > 1 else "") + " and counting... ⭐\n\n" + m.content)
