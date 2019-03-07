@@ -36,7 +36,7 @@ async def msg(context, user, guild, sys = False, atchs = None):
 		channel = discord.utils.get(guild.text_channels, name="system-log")
 	else:
 		channel = discord.utils.get(guild.text_channels, name="log")
-	return await channel.send(embed=e, files=atchs if len(atchs) > 0 else None)
+	return await channel.send(embed=e, files=atchs if (not atchs is None and len(atchs) > 0) else None)
 
 class Superintendent(commands.Bot):
 	def __init__(self):
