@@ -90,7 +90,7 @@ class Superintendent(commands.Bot):
 					if not str(resp.status).startswith("2"):
 						print("A file was not found while deleting a message from", m.guild.name + ". (" + str(resp.status), str(resp) + ")")
 						continue
-					arr.append(["Attatchment " + str(atch.id), atch.proxy_url])
+					arr.append(["Attachment " + str(atch.id), atch.proxy_url])
 					await session.close()
 		return await msg(arr, message.author, message.guild, True)
 
