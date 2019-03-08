@@ -22,7 +22,7 @@ def fs(data = None):
 	except Exception as e:
 		print("An error has occurred while attempting to retrieve the data file.\n" + type(e).__name__ + ": " + str(e))
 
-async def msg(context, user, guild, sys = False, atchs = None):
+async def msg(context, user, guild, sys = False):
 	e = discord.Embed(title=context[0], timestamp=datetime.datetime.utcnow(), colour=0x5f7d4e)
 	e.set_thumbnail(url=user.avatar_url)
 	if type(context[1]) is str:
@@ -36,7 +36,7 @@ async def msg(context, user, guild, sys = False, atchs = None):
 		channel = discord.utils.get(guild.text_channels, name="system-log")
 	else:
 		channel = discord.utils.get(guild.text_channels, name="log")
-	return await channel.send(embed=e, files=atchs if (not atchs is None and len(atchs) > 0) else None)
+	return await channel.send(embed=e)
 
 class Superintendent(commands.Bot):
 	def __init__(self):
@@ -76,23 +76,23 @@ class Superintendent(commands.Bot):
 			return
 		if before.content == after.content:
 			return
-		return await msg(["⚠ A message has been edited on the server ⚠", ["Author", str(before.author)], ["Channel", before.channel.mention], ["Before", before.content], ["After", after.content]], before.author, before.guild, True)
+		return await msg(["⚠ A message has been edited on the server ⚠", ["Author", str(before.author)], ["Channel", before.channel.mention], ["Before", before.content if before.content != "" else "*(   no message content available   )*"], ["After", after.content if after.content != "" else "*(   no message content available   )*"]], before.author, before.guild, True)
 
 	async def on_message_delete(self, message):
 		if message.author == self.user:
 			return
-		a = []
-		for atch in message.attachments:
-			async with aiohttp.ClientSession() as session:
-				async with session.get(atch.proxy_url) as resp:
-					if resp.status != 200:
-						print("A file was not found while inducting a message to the Hall of Fame in " + m.guild.name + ".")
-					a.append(discord.File(io.BytesIO(await resp.read()), atch.filename))
-					await session.close()
 		arr = ["🚫 A message has been removed from the server 🚫", ["Author", str(message.author)], ["Channel", message.channel.mention]]
 		if message.content != "":
 			arr.append(["Content", message.content])
-		return await msg(arr, message.author, message.guild, True, a)
+		for atch in message.attachments:
+			async with aiohttp.ClientSession() as session:
+				async with session.get(atch.proxy_url) as resp:
+					if not str(resp.status).startswith("2"):
+						print("A file was not found while deleting a message from", m.guild.name + ". (" + str(resp.status), str(resp) + ")")
+						continue
+					arr.append(["Attatchment " + str(atch.id), atch.proxy_url])
+					await session.close()
+		return await msg(arr, message.author, message.guild, True)
 
 	async def on_raw_reaction_add(self, payload):
 		if str(payload.emoji) == "⭐":
