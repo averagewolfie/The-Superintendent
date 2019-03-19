@@ -1,4 +1,7 @@
 import discord
+
+import superutils
+
 from discord.ext import commands
 
 class New(commands.Cog):
@@ -21,6 +24,21 @@ class New(commands.Cog):
 		e.add_field(name="And who is your creator?", value="I am not allowed to say Toron's name when that question is asked.")
 		e.set_thumbnail(url=self.bot.user.avatar_url)
 		await ctx.channel.send(embed = e)
+
+	@commands.command(aliases=["reload", "re"])
+	async def reload_extensions(self, ctx):
+		return superutils.load_extensions(self.bot, True)
+
+	@commands.command()
+	async def suggestions(self, ctx):
+		try:
+			hst = await ctx.channel.history().flatten()
+			for i in hst:
+				if i.content.lower().startswith() == "suggestion":
+					await i.add_reaction("👍")
+					await i.add_reaction("👎")
+		except:
+			print("Something went wrong, dumbass.")
 
 def setup(bot):
 	bot.add_cog(New(bot))
