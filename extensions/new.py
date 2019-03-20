@@ -30,15 +30,28 @@ class New(commands.Cog):
 		return superutils.load_extensions(self.bot, True)
 
 	@commands.command()
-	async def suggestions(self, ctx):
-		try:
-			hst = await ctx.channel.history().flatten()
-			for i in hst:
-				if i.content.lower().startswith() == "suggestion":
-					await i.add_reaction("👍")
-					await i.add_reaction("👎")
-		except:
-			print("Something went wrong, dumbass.")
+	async def suggestions(self, ctx, msg = None):
+		if msg is None:
+			try:
+				hst = await ctx.channel.history(limit=10).flatten()
+				for i in hst:
+					if i.content.lower().startswith() == "suggestion":
+						await i.add_reaction("👍")
+						await i.add_reaction("👎")
+			except:
+				print("The message history could not be accessed. The bot might explain why.")
+		else:
+			try:
+				msgid = int(msg)
+			except:
+				return await ctx.channel.send("You need to specify an *integer* value for a message ID.")
+			else:
+				try:
+					message = await ctx.channel.get_message(msgid)
+					await message.add_reaction("👍")
+					await message.add_reaction("👎")
+				except:
+					return await ctx.channel.send(msg + " does not seem to be a valid message ID.")
 
 def setup(bot):
 	bot.add_cog(New(bot))
