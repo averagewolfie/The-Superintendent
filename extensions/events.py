@@ -28,15 +28,10 @@ class Events(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
 
-	@commands.Cog.listener()
+	"""@commands.Cog.listener()
 	async def on_message(self, message):
 		if message.author == self.bot.user:
-			return
-		if not message.channel.id == 555459963078705168: #replace this with whatever channel your members would make suggestions in.
-			return
-		if message.content.lower().startswith("suggestion"): #a trigger keyword which makes the bot add "accept" and "deny" options for people to choose for the suggestion added.
-			await message.add_reaction("👍")
-			await message.add_reaction("👎")
+			return"""
 
 	@commands.Cog.listener()
 	async def on_member_join(self, member):
