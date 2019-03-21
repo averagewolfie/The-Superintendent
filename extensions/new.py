@@ -43,9 +43,9 @@ class New(commands.Cog):
 			data["suggestions"][str(ctx.guild.id)] = {}
 		e = discord.Embed(title=("Suggestion #" + str(len(data["suggestions"][str(ctx.guild.id)]) + 1)), description=content, colour=0x5f7d4e)
 		e.set_thumbnail(url=ctx.author.avatar_url)
-		e.add_field(name="This suggestion is open!", value="Please vote on it and share your thoughts in <#555440421149474829>!")
+		e.add_field(name="This suggestion is open!", value="Please vote on it and share your thoughts in <#555440421149474829>!") #channel mention for whatever channel you would let people discuss suggestions in.
 		e.set_author(name=str(ctx.author),icon_url=ctx.author.avatar_url)
-		msg = await discord.utils.get(ctx.guild.channels, name="suggestions_box").send(embed=e)
+		msg = await discord.utils.get(ctx.guild.channels, name="suggestions_box").send(embed=e) #another channel where the suggestions will actually appear.
 		await msg.add_reaction("👍")
 		await msg.add_reaction("👎")
 		data["suggestions"][str(ctx.guild.id)][("#" + str(len(data["suggestions"][str(ctx.guild.id)]) + 1))] = {"id":msg.id, "outcome":"open", "response":""}
@@ -86,8 +86,8 @@ class New(commands.Cog):
 		e.colour = outcomes[outcome.lower()]["colour"]
 		e.set_field_at(0, name=("The suggestion " + outcomes[outcome.lower()]["response"]), value="Please vote on it and share your thoughts in <#555440421149474829>!" if response is None else response)
 		await msg.edit(embed=e)
-		data["suggestions"][str(ctx.guild.id)][("#" + number)]["outcome"] = outcome
-		data["suggestions"][str(ctx.guild.id)][("#" + number)]["response"] = response
+		data["suggestions"][str(ctx.guild.id)][("#" + number)]["outcome"] = "open" if outcome == "reopen" else outcome
+		data["suggestions"][str(ctx.guild.id)][("#" + number)]["response"] = "" if response is None else response
 		superutils.fs(data)
 
 def setup(bot):
