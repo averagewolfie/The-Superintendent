@@ -1,10 +1,5 @@
 import json
 
-extensions = {
-	"extensions.events",
-	"extensions.new"
-}
-
 def fs(data = None):
 	try:
 		if data is None:
@@ -13,6 +8,8 @@ def fs(data = None):
 			json.dump(data, open("data.json", "w"), indent=4)
 	except Exception as e:
 		print("An error has occurred while attempting to retrieve the data file.\n" + type(e).__name__ + ": " + str(e))
+
+extensions = fs()["extensions"]
 
 def load_extensions(bot, which):
 	print(("Reloading" if which else "Loading"), "extensions:")
