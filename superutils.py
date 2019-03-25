@@ -9,10 +9,9 @@ def fs(data = None):
 	except Exception as e:
 		print("An error has occurred while attempting to retrieve the data file.\n" + type(e).__name__ + ": " + str(e))
 
-extensions = fs()["extensions"]
-
 def load_extensions(bot, which):
 	print(("Reloading" if which else "Loading"), "extensions:")
+	extensions = fs()["extensions"]
 	for ext in extensions:
 		try:
 			if which:
