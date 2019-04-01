@@ -3,7 +3,6 @@ import datetime
 import io
 import aiohttp
 import traceback
-
 import superutils
 
 from discord.ext import commands
@@ -85,34 +84,37 @@ class Events(commands.Cog):
 	@commands.Cog.listener()
 	async def on_raw_reaction_add(self, payload):
 		if str(payload.emoji) == "⭐":
-			m = await self.bot.get_channel(payload.channel_id).get_message(payload.message_id)
+			m = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
 			amt = len(await discord.utils.get(m.reactions, emoji=str(payload.emoji)).users().flatten())
 			if amt > 2:
 				data = superutils.fs()
+				a = ""
+				for atch in m.attachments:
+					a += "\n" + atch.url
 				if str(m.id) in data["messages"]:
-					h = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").get_message(data["messages"][str(m.id)])
-					await h.edit(content="⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " stars and counting... ⭐\n\n" + m.content)
+					h = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").fetch_message(data["messages"][str(m.id)])
+					await h.edit(content="⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " stars and counting... ⭐" + ("\n\n" + m.content if m.content != "" else m.content) + "\n" + a)
 				else:
-					a = ""
-					for atch in m.attachments:
-						a += "\n" + atch.url
-					msg = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").send("⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " star" + ("s" if amt > 1 else "") + " and counting... ⭐\n\n" + m.content + "\n" + a)
+					msg = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").send("⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " star" + ("s" if amt > 1 else "") + " and counting... ⭐" + ("\n\n" + m.content if m.content != "" else m.content) + "\n" + a)
 					data["messages"][str(m.id)] = msg.id
 					superutils.fs(data)
 
 	@commands.Cog.listener()
 	async def on_raw_reaction_remove(self, payload):
 		if str(payload.emoji) == "⭐":
-			m = await self.bot.get_channel(payload.channel_id).get_message(payload.message_id)
+			m = await self.bot.get_channel(payload.channel_id).fetch_message(payload.message_id)
 			data = superutils.fs()
 			try:
-				h = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").get_message(data["messages"][str(m.id)])
+				h = await discord.utils.get(m.guild.text_channels, name="hall-of-fame").fetch_message(data["messages"][str(m.id)])
 			except KeyError:
 				print("Disregard reaction remove, the message does not exist in the Hall of Fame.")
 			else:
 				amt = len(await discord.utils.get(m.reactions, emoji=str(payload.emoji)).users().flatten())
+				a = ""
+				for atch in m.attachments:
+					a += "\n" + atch.url
 				if amt > 2:
-					await h.edit(content="⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " star" + ("s" if amt > 1 else "") + " and counting... ⭐\n\n" + m.content)
+					await h.edit(content="⭐ " + m.author.mention + " has a post in the Hall of Fame! " + str(amt) + " star" + ("s" if amt > 1 else "") + " and counting... ⭐" + ("\n\n" + m.content if m.content != "" else m.content) + "\n" + a)
 				else:
 					await h.delete()
 					del data["messages"][str(m.id)]

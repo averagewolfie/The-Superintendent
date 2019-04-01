@@ -1,5 +1,4 @@
 import discord
-
 import superutils
 
 from discord.ext import commands
@@ -50,6 +49,7 @@ class New(commands.Cog):
 		await msg.add_reaction("👎")
 		data["suggestions"][str(ctx.guild.id)][("#" + str(len(data["suggestions"][str(ctx.guild.id)]) + 1))] = {"id":msg.id, "outcome":"open", "response":""}
 		superutils.fs(data)
+		await ctx.message.delete()
 
 	@suggestion.command()
 	async def edit(self, ctx, number, *, content):
@@ -67,6 +67,7 @@ class New(commands.Cog):
 			return await ctx.channel.send("Please offer a suggestion at least 32 characters in length, to explain the context of the suggestion.")
 		e.description = content
 		await msg.edit(embed=e)
+		await ctx.message.delete()
 
 	@suggestion.command()
 	async def respond(self, ctx, number, outcome, *, response = None):
