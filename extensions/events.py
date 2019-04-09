@@ -23,6 +23,15 @@ async def msg(context, user, guild, sys = False):
 		channel = discord.utils.get(guild.text_channels, name="log")
 	return await channel.send(embed=e)
 
+def content(message, title):
+	if message != "":
+		if len(message) <= 1024:
+			return [title, message]
+		else:
+			return ["{}, part 1".format(title), message[:1024]], ["{}, part 2".format(title), message[1024:]]
+	else:
+		return [title, "*(   no message content available   )*"]
+
 class Events(commands.Cog):
 	def __init__(self, bot):
 		self.bot = bot
@@ -62,15 +71,18 @@ class Events(commands.Cog):
 			return
 		if before.content == after.content:
 			return
-		return await msg(["⚠ A message has been edited on the server ⚠", ["Author", str(before.author)], ["Channel", before.channel.mention], ["Before", before.content if before.content != "" else "*(   no message content available   )*"], ["After", after.content if after.content != "" else "*(   no message content available   )*"]], before.author, before.guild, True)
+		arr = ["⚠ A message has been edited on the server ⚠", ["Author", str(before.author)], ["Channel", before.channel.mention]]
+		arr.append(content(before.content, "Before"))
+		arr.append(content(after.content, "After"))
+		print(arr)
+		return await msg(arr, before.author, before.guild, True)
 
 	@commands.Cog.listener()
 	async def on_message_delete(self, message):
 		if message.author == self.bot.user or message.author.bot:
 			return
 		arr = ["🚫 A message has been removed from the server 🚫", ["Author", str(message.author)], ["Channel", message.channel.mention]]
-		if message.content != "":
-			arr.append(["Content", message.content])
+		arr.append(content(message.content, "Content"))
 		for atch in message.attachments:
 			async with aiohttp.ClientSession() as session:
 				async with session.get(atch.proxy_url) as resp:
