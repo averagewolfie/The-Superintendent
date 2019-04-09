@@ -55,7 +55,7 @@ class New(commands.Cog):
 	async def edit(self, ctx, number, *, content):
 		try:
 			data = superutils.fs()
-			msg = await discord.utils.get(ctx.guild.channels, name="suggestions_box").get_message(data["suggestions"][str(ctx.guild.id)][("#" + number)]["id"])
+			msg = await discord.utils.get(ctx.guild.channels, name="suggestions_box").fetch_message(data["suggestions"][str(ctx.guild.id)][("#" + number)]["id"])
 		except:
 			return await ctx.channel.send(number + " does not seem to be a valid suggestion index.")
 		e = msg.embeds[0]
@@ -75,9 +75,9 @@ class New(commands.Cog):
 			return await ctx.channel.send("You do not have the applicable permissions to use this command!")
 		try:
 			data = superutils.fs()
-			msg = await discord.utils.get(ctx.guild.channels, name="suggestions_box").get_message(data["suggestions"][str(ctx.guild.id)][("#" + number)]["id"])
+			msg = await discord.utils.get(ctx.guild.channels, name="suggestions_box").fetch_message(data["suggestions"][str(ctx.guild.id)][("#" + number)]["id"])
 		except:
-			await ctx.channel.send(number + " does not seem to be a valid suggestion index.")
+			return await ctx.channel.send(number + " does not seem to be a valid suggestion index.")
 		outcomes = {"approve": {"response":"has been approved:", "colour": 0x00cc00},"deny": {"response":"has been denied:", "colour": 0xcc0000},"existing": {"response":"has already been addressed:", "colour": 0xff6600},"duplicate": {"response":"has already been submitted:", "colour": 0x9900cc},"inappropriate": {"response":"was considered inappropriate:", "colour": 0x990000},"reopen": {"response":"is open!", "colour": 0x5f7d4e}}
 		if not outcome.lower() in outcomes:
 			return await ctx.channel.send("\"" + outcome.capitalize() + "\" does not seem to be a valid suggestion closure type.")

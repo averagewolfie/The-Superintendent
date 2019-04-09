@@ -58,7 +58,7 @@ class Events(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_message_edit(self, before, after):
-		if before.author == self.bot.user:
+		if before.author == self.bot.user or message.author.bot:
 			return
 		if before.content == after.content:
 			return
@@ -66,7 +66,7 @@ class Events(commands.Cog):
 
 	@commands.Cog.listener()
 	async def on_message_delete(self, message):
-		if message.author == self.bot.user:
+		if message.author == self.bot.user or message.author.bot:
 			return
 		arr = ["🚫 A message has been removed from the server 🚫", ["Author", str(message.author)], ["Channel", message.channel.mention]]
 		if message.content != "":
